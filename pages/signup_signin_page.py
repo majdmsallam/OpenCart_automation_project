@@ -10,6 +10,8 @@ class SignupSigninPage(BasePage):
     SIGNUP_EMAIL_ADDRESS_LOCATOR = (By.CSS_SELECTOR,"input[data-qa='signup-email']")
     SIGNUP_BUTTON_LOCATOR = (By.CSS_SELECTOR, "button[data-qa='signup-button']")
 
+    INVALID_CRIDINTIALS_LOCATOR = (By.XPATH, "//input[@data-qa='login-password']/following-sibling::p")
+
     def login(self,email, password):
         self.send_keys(self.LOGIN_EMAIL_ADDRESS_LOCATOR,email)
         self.send_keys(self.LOGIN_PASSWORD_LOCATOR, password)
@@ -19,3 +21,6 @@ class SignupSigninPage(BasePage):
         self.send_keys(self.SIGNUP_NAME_LOCATOR, name)
         self.send_keys(self.SIGNUP_EMAIL_ADDRESS_LOCATOR, email)
         self.click(self.SIGNUP_BUTTON_LOCATOR)
+
+    def is_incorrect_email_password(self):
+        return self.wait_for_element(self.INVALID_CRIDINTIALS_LOCATOR).is_displayed()
