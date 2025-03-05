@@ -8,6 +8,7 @@ class HomePage(BasePage):
     url = "https://www.automationexercise.com/"
     USERNAME_LOCATOR = (By.XPATH,"//b")
     DELETE_ACCOUNT_LOCATOR = (By.XPATH,"//a[contains(text(), 'Delete Account')]")
+    CONTACT_US_LOCATOR = (By.XPATH,"//a[contains(text(), 'Contact us')]")
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -29,3 +30,6 @@ class HomePage(BasePage):
 
     def go_to_signup_login_page(self):
         self.click(self.LOGIN_SIGNUP_BAR)
+
+    def go_to_contactus_page(self):
+        self.click(self.CONTACT_US_LOCATOR)
