@@ -9,6 +9,7 @@ class HomePage(BasePage):
     USERNAME_LOCATOR = (By.XPATH,"//b")
     DELETE_ACCOUNT_LOCATOR = (By.XPATH,"//a[contains(text(), 'Delete Account')]")
     CONTACT_US_LOCATOR = (By.XPATH,"//a[contains(text(), 'Contact us')]")
+    PRODUCTS_LOCATOR = (By.XPATH,"//a[contains(text(), 'Products')]")
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -33,3 +34,6 @@ class HomePage(BasePage):
 
     def go_to_contactus_page(self):
         self.click(self.CONTACT_US_LOCATOR)
+
+    def go_to_products_page(self):
+        self.click(self.PRODUCTS_LOCATOR)
