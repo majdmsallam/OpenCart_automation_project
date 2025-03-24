@@ -40,7 +40,7 @@ class TestUser:
     @pytest.mark.parametrize("data", [
         {
             "name": "majd sameh",
-            "email": "khaled123.doe@example.com",
+            "email": "update_get_details@example.com",
             "password": "Password123",
             "title": "Mr",
             "birth_date": "5",
@@ -65,10 +65,11 @@ class TestUser:
         assert response_json["message"] == "User updated!"
 
     def test_get_user_details(self, api_client):
-        payload= {"email":"khaled123.doe@example.com"}
+        payload= {"email":"update_get_details@example.com"}
         response = api_client.get("/getUserDetailByEmail", params=payload)
         response_json = response.json()
         print(response_json)
         assert response_json["responseCode"] == 200
+
 
 

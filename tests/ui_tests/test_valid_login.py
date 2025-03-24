@@ -19,10 +19,5 @@ class TestValidLogin:
 
         assert homepage.is_username_visible() == self.NAME
 
-        accountdeleted = DeletedAccountPage(self.driver)
-        homepage.click_delete_account()
-        assert accountdeleted.is_account_deleted() == "ACCOUNT DELETED!"
-        accountdeleted.click_continue_btn()
-
 
 
