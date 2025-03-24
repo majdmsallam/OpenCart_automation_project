@@ -15,11 +15,15 @@
 #     driver.quit()
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
 
 
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
-                     help="Specify the browser: chrome or firefox or edge")
+                     help="Specify the browser: chrome, firefox, or edge")
+
 
 @pytest.fixture()
 def browser(request):
@@ -30,15 +34,28 @@ def browser(request):
 def setup(browser):
     global driver
     if browser == "chrome":
-        driver = webdriver.Chrome()
+        options = ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1080")
+        driver = webdriver.Chrome(options=options)
+
     elif browser == "firefox":
-        driver = webdriver.Firefox()
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Firefox(options=options)
+
     elif browser == "edge":
-        driver = webdriver.Edge()
+        options = EdgeOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Edge(options=options)
+
     else:
-        raise ValueError("unsupported browser")
+        raise ValueError("Unsupported browser")
+
     yield driver
-    # driver.close()
+    driver.quit()
+
 
 
 
