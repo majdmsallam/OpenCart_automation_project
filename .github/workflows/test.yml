@@ -24,26 +24,28 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install allure-pytest  # Install Allure for PyTest
 
       - name: Install Allure CLI
         run: |
           sudo apt update
-          sudo apt install -y curl
-          curl -fsSL https://raw.githubusercontent.com/allure-framework/allure2/master/install.sh | bash
-          echo "export PATH=$HOME/.allure/bin:$PATH" >> ~/.bashrc
-          source ~/.bashrc
-          allure --version
+          sudo apt install -y curl unzip
+          curl -OL https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
+          unzip allure-2.25.0.zip
+          sudo mv allure-2.25.0 /opt/allure
+          echo 'export PATH=$PATH:/opt/allure/bin' >> ~/.bashrc
+          echo 'export PATH=$PATH:/opt/allure/bin' >> $GITHUB_ENV
+
+      - name: Verify Allure Installation
+        run: allure --version
 
       - name: Run PyTest with Allure
         run: pytest --alluredir=allure-results || true
 
       - name: Generate Allure Report
         run: |
-          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
-            allure generate allure-results -o allure-report --clean
-          else
-            echo "No test results found. Skipping report generation."
-          fi
+          mkdir -p allure-report
+          allure generate allure-results -o allure-report --clean
 
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -56,8 +58,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          TOTAL_TESTS=$(grep -oP '(?<=collected )\d+' allure-results/environment.properties || echo "0")
-          FAILED_TESTS=$(grep -oP '(?<=failures=)\d+' allure-results/environment.properties || echo "0")
-          STATUS="✅ *Test Results:* $TOTAL_TESTS tests executed, ❌ $FAILED_TESTS failed."
-          REPORT_LINK="📊 *View Allure Report:* https://majdmsallam.github.io/OpenCart_automation_project/"
+          STATUS="*Test Results:* $(grep -oP '(?<=collected )\d+' allure-results/environment.properties) tests executed."
+          REPORT_LINK="*View Allure Report:* https://majdmsallam.github.io/OpenCart_automation_project/"
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$STATUS\n$REPORT_LINK\"}" $SLACK_WEBHOOK_URL
