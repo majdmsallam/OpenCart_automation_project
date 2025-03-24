@@ -7,7 +7,7 @@ Welcome to the **eCommerce Website Testing Project**! This repository contains U
 - **Pytest** 🧪
 - **Selenium** 🌐
 - **Requests** 💻
-- **CI/CD** (coming soon! 🚧)
+- **CI/CD** (on going! 🚧)
 
 ## 📋 Features:
 - **UI Testing**: Automated tests for the user interface using Selenium to ensure proper navigation, UI elements, and workflows.
