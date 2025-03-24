@@ -27,8 +27,11 @@ jobs:
 
       - name: Install Allure CLI
         run: |
-          sudo apt update
-          sudo apt install -y allure
+          wget -qO allure.tar.gz https://github.com/allure-framework/allure2/releases/latest/download/allure-2.25.0.tgz
+          tar -xzf allure.tar.gz
+          sudo mv allure-2.25.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
+          allure --version
 
       - name: Run PyTest with Allure
         run: pytest --alluredir=allure-results || true
