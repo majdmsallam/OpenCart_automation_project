@@ -1,4 +1,4 @@
-name: CI/CD for OpenCart Automation
+name: Run Tests and Notify Slack
 
 on:
   push:
@@ -24,40 +24,33 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install allure-pytest  # Install Allure for PyTest
+          pip install pytest pytest-json-report
 
-      - name: Install Allure CLI
+      - name: Run PyTest and Generate JSON Report
         run: |
-          sudo apt update
-          sudo apt install -y curl unzip
-          curl -OL https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
-          unzip allure-2.25.0.zip
-          sudo mv allure-2.25.0 /opt/allure
-          echo 'export PATH=$PATH:/opt/allure/bin' >> ~/.bashrc
-          echo 'export PATH=$PATH:/opt/allure/bin' >> $GITHUB_ENV
+          pytest --json-report --json-report-file=test_results.json || true  # Always generate report
 
-      - name: Verify Allure Installation
-        run: allure --version
-
-      - name: Run PyTest with Allure
-        run: pytest --alluredir=allure-results || true
-
-      - name: Generate Allure Report
+      - name: Extract Test Results
+        id: test_results
         run: |
-          mkdir -p allure-report
-          allure generate allure-results -o allure-report --clean
+          PASSED=$(jq '[.tests[] | select(.outcome == "passed")] | length' test_results.json)
+          FAILED=$(jq '[.tests[] | select(.outcome == "failed")] | length' test_results.json)
+          TOTAL=$((PASSED + FAILED))
 
-      - name: Deploy Allure Report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          branch: gh-pages
+          echo "PASSED=$PASSED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
 
-      - name: Send Slack Notification
+      - name: Send Slack Notification (Only if Tests Pass or Fail)
+        if: success() || failure()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          STATUS="*Test Results:* $(grep -oP '(?<=collected )\d+' allure-results/environment.properties) tests executed."
-          REPORT_LINK="*View Allure Report:* https://majdmsallam.github.io/OpenCart_automation_project/"
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$STATUS\n$REPORT_LINK\"}" $SLACK_WEBHOOK_URL
+          STATUS="✅ All tests passed!" 
+          if [ "$FAILED" -gt 0 ]; then
+            STATUS="❌ Some tests failed!"
+          fi
+          
+          MESSAGE="*Test Results:*\n- ✅ Passed: $PASSED\n- ❌ Failed: $FAILED\n- 📊 Total: $TOTAL"
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$STATUS\n$MESSAGE\"}" $SLACK_WEBHOOK_URL
