@@ -25,14 +25,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install Allure CLI
+        run: |
+          sudo apt update
+          sudo apt install -y allure
+
       - name: Run PyTest with Allure
         run: pytest --alluredir=allure-results || true
 
       - name: Generate Allure Report
         run: |
-          pip install allure-pytest
-          mkdir -p allure-report
-          allure generate allure-results -o allure-report --clean
+          if [ -d "allure-results" ] && [ "$(ls -A allure-results)" ]; then
+            allure generate allure-results -o allure-report --clean
+          else
+            echo "No test results found. Skipping report generation."
+          fi
 
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -45,6 +52,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          STATUS="*Test Results:* $(grep -oP '(?<=collected )\d+' allure-results/environment.properties) tests executed."
-          REPORT_LINK="*View Allure Report:* https://majdmsallam.github.io/OpenCart_automation_project/"
+          TOTAL_TESTS=$(grep -oP '(?<=collected )\d+' allure-results/environment.properties || echo "0")
+          FAILED_TESTS=$(grep -oP '(?<=failures=)\d+' allure-results/environment.properties || echo "0")
+          STATUS="✅ *Test Results:* $TOTAL_TESTS tests executed, ❌ $FAILED_TESTS failed."
+          REPORT_LINK="📊 *View Allure Report:* https://majdmsallam.github.io/OpenCart_automation_project/"
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$STATUS\n$REPORT_LINK\"}" $SLACK_WEBHOOK_URL
