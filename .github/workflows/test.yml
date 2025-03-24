@@ -44,7 +44,7 @@ jobs:
       - name: Send Slack Notification (Only if Tests Pass or Fail)
         if: success() || failure()
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
           STATUS="✅ All tests passed!" 
           if [ "$FAILED" -gt 0 ]; then
@@ -53,4 +53,4 @@ jobs:
           
           MESSAGE="*Test Results:*\n- ✅ Passed: $PASSED\n- ❌ Failed: $FAILED\n- 📊 Total: $TOTAL"
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$STATUS\n$MESSAGE\"}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$STATUS\n$MESSAGE\"}" $SLACK_WEBHOOK
